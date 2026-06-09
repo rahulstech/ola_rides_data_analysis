@@ -1,40 +1,49 @@
 
+from streamlit import sidebar
 from ratings import section_ratings
 from cancellation import section_cancellation
 from revenue import section_revenue
 from vehicle_type import section_vehicle_type
 from overall import section_overall
-from streamlit.delta_generator import DeltaGenerator
 from typing import Callable
 import streamlit as st
 
 
 class SidebarOptionData:
 
-    def __init__(self,label: str,on_click: Callable[[],None]):
+    def __init__(self,label: str,show_content: Callable[[],None]):
         self.label = label
-        self.on_click = on_click
+        self.show_content = show_content
 
+sidebar_options = [
+    SidebarOptionData("Overall",section_overall),
+    SidebarOptionData("Vehicle Type", section_vehicle_type),
+    SidebarOptionData("Revenue", section_revenue),
+    SidebarOptionData("Cancellation",section_cancellation),
+    SidebarOptionData("Ratings",section_ratings)
+]
 
+def place_sidebar():
+    sidebar = st.sidebar
 
-def place_sidebar(sidebar: DeltaGenerator):
-    sidebar_options = [
-        SidebarOptionData("Overall",section_overall),
-        SidebarOptionData("Vehicle Type", section_vehicle_type),
-        SidebarOptionData("Revenue", section_revenue),
-        SidebarOptionData("Cancellation",section_cancellation),
-        SidebarOptionData("Ratings",section_ratings)
-    ]
+    if "selected_option" not in st.session_state:
+        st.session_state.selected_option = 0
 
-    for option in sidebar_options:
-        if sidebar.button(label=option.label,use_container_width=True):
-            option.on_click()
+    for index, option in enumerate(sidebar_options):
+        if sidebar.button(
+            label=option.label,
+            width='stretch',
+            use_container_width=True,
+        ):
+            st.session_state.selected_option = index
+    
+    
+    sidebar_options[st.session_state.selected_option].show_content()
 
 
 def main():
-    sidebar = st.sidebar
+    place_sidebar()  
 
-    place_sidebar(sidebar)  
 
 if __name__ == "__main__":
     main()

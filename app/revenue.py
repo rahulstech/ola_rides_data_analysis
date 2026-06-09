@@ -1,8 +1,8 @@
-from streamlit import tabs
 from streamlit.delta_generator import DeltaGenerator
 import streamlit as st 
 import database as db
 import pandas as pd
+import plotly.express as px
 
 
 def content_revenue_by_payment_method(target: DeltaGenerator):
@@ -12,12 +12,17 @@ def content_revenue_by_payment_method(target: DeltaGenerator):
         columns=["Payment Method","Revenue"]
     )
 
-    target.bar_chart(
-        data=df,
+    fig = px.bar(
+        df,
         x="Payment Method",
         y="Revenue",
         color="Payment Method",
+    )
+
+    target.plotly_chart(
+        fig,
         height=500,
+        width='stretch',
         use_container_width=True
     )
 
@@ -29,14 +34,20 @@ def content_top_5_customer_by_booking_value(target: DeltaGenerator):
         columns=["Customer ID","Total Booking Value"]
     )
 
-    target.bar_chart(
-        data=df,
+    fig = px.bar(
+        df,
         x="Customer ID",
         y="Total Booking Value",
         color="Customer ID",
+    )
+
+    target.plotly_chart(
+        fig,
         height=500,
+        width='stretch',
         use_container_width=True
     )
+
 
 def content_daily_ride_distance_distribution(target: DeltaGenerator):
     data = db.get_daily_total_ride_distance()
@@ -45,14 +56,27 @@ def content_daily_ride_distance_distribution(target: DeltaGenerator):
         columns=["Date","Daily Total Ride Distance"]
     )
 
-    target.scatter_chart(
-        data=df,
+    fig = px.scatter(
+        df,
         x="Date",
         y="Daily Total Ride Distance",
         color="Date",
+    )
+
+    target.plotly_chart(
+        fig,
         height=500,
+        width='stretch',
         use_container_width=True
     )
+
+    with target.expander(label="Show Raw Data") as exp:
+        exp.dataframe(
+            df,
+            hide_index=True,
+            width='stretch',
+            use_container_width=True
+        )
 
 
 def section_revenue():

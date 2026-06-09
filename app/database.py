@@ -1,11 +1,19 @@
-from streamlit import query_params
 import sqlite3
+import atexit
 
 db_path = "../sql/ola_rides.sqlite3"
 
-db_conn = sqlite3.connect(db_path)
+db_conn = sqlite3.connect(db_path, check_same_thread=False)
 
 cur = db_conn.cursor()
+
+
+def close_db():
+    cur.close()
+    db_conn.close()
+
+
+atexit.register(close_db)
 
 
 
@@ -82,29 +90,58 @@ def get_average_customer_ratings():
     return cur.fetchone()[0]
 
 
-
-def get_top_5_vehicle_by_ride_distance():
+def get_daily_ride_volume():
     query = """
-        SELECT
-            `vehicle_type`,
-            ROUND(AVG(`ride_distance`), 2) AS `vehicle_avg_ride_distance`
-        FROM
+        SELECT 
+            DATE(`date`) AS `date`,
+            COUNT(`booking_id`) AS `daily_ride_volume` 
+        FROM 
             `rides`
-        WHERE 
-            `incomplete_rides` = ?
         GROUP BY 
-            `vehicle_type`
-        ORDER BY
-            `vehicle_avg_ride_distance` DESC
-        LIMIT
-            5
+            DATE(`date`) 
+        ORDER BY 
+            `date`
         ;
     """
-    
-    cur.execute(query, ("No",))
+
+    cur.execute(query)
     return cur.fetchall()
 
 
+def get_booking_count_by_booking_status():
+    query = """
+        SELECT
+            `booking_status`,
+            COUNT(`booking_id`) AS `booking_count`
+        FROM
+            `rides`
+        GROUP BY
+            `booking_status`
+        ;
+    """
+
+    cur.execute(query)
+    return cur.fetchall()
+
+
+def get_vehicle_ride_data():
+    query = """
+        SELECT
+            `vehicle_type`,
+            `vehicle_images`,
+            SUM(`booking_value`) AS `total_booking_value`,
+            SUM(CASE `booking_status` WHEN 'Success' THEN `booking_value` ELSE 0 END) AS `total_success_booking_value`,
+            SUM(CASE `incomplete_rides` WHEN 'No' THEN 1 else 0 end) AS `total_complete_ride_count`,
+            SUM(CASE `incomplete_rides` WHEN 'No' THEN `ride_distance` ELSE 0 END) AS `total_complete_ride_distance`
+        FROM
+            `rides`
+        GROUP BY
+            `vehicle_type`, `vehicle_images`
+        ;
+    """
+
+    cur.execute(query)
+    return cur.fetchall()
 
 
 def get_revenue_by_payment_method():
@@ -169,8 +206,6 @@ def get_daily_total_ride_distance():
     return cur.fetchall()
 
 
-
-
 def get_customer_cancellation_reasons():
     query = """
         SELECT
@@ -191,7 +226,6 @@ def get_customer_cancellation_reasons():
     return cur.fetchall()
 
 
-
 def get_driver_cancellation_reasons():
     query = """
         SELECT
@@ -209,4 +243,24 @@ def get_driver_cancellation_reasons():
     """
     
     cur.execute(query, ("Canceled by Driver",))
+    return cur.fetchall()
+
+
+def get_vehicle_ratings():
+    query = """
+        SELECT
+            `vehicle_type`,
+            `vehicle_images`,
+            ROUND(AVG(`customer_rating`), 1) AS `avg_customer_rating`,
+            ROUND(AVG(`driver_ratings`), 1) AS `avg_driver_rating`
+        FROM
+            `rides`
+        WHERE
+            `incomplete_rides` = 'No' AND `customer_rating` IS NOT NULL
+        GROUP BY
+            `vehicle_type`, `vehicle_images`
+        ;
+    """
+
+    cur.execute(query)
     return cur.fetchall()

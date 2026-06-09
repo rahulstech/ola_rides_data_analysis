@@ -3,6 +3,7 @@ from database import get_customer_cancellation_reasons
 from streamlit.elements.lib.mutable_tab_container import TabContainer
 import streamlit as st 
 import pandas as pd 
+import plotly.express as px
 
 def tab_content_canceled_by_customer(tab: TabContainer): 
     data = get_customer_cancellation_reasons()
@@ -12,12 +13,15 @@ def tab_content_canceled_by_customer(tab: TabContainer):
         columns=["Cancellation Reason", "Booking Count"]
     )
 
-    tab.bar_chart(
-        data=df,
+    fig = px.bar(
+        df,
         x="Cancellation Reason",
         y="Booking Count",
-        horizontal=True,
-        color='Cancellation Reason',
+        color="Cancellation Reason",
+    )
+
+    tab.plotly_chart(
+        fig,
         width='stretch',
         height=500,
         use_container_width=True
@@ -32,12 +36,16 @@ def tab_content_canceled_by_driver(tab: TabContainer):
         columns=["Cancellation Reason", "Booking Count"]
     )
 
-    tab.bar_chart(
-        data=df,
-        x="Cancellation Reason",
-        y="Booking Count",
-        horizontal=True,
-        color='Cancellation Reason',
+    fig = px.bar(
+        df,
+        x="Booking Count",
+        y="Cancellation Reason",
+        color="Cancellation Reason",
+        orientation="h",
+    )
+
+    tab.plotly_chart(
+        fig,
         width='stretch',
         height=500,
         use_container_width=True
@@ -47,12 +55,11 @@ def tab_content_canceled_by_driver(tab: TabContainer):
 def section_cancellation():
     st.title("Cancellation", text_alignment='center')
 
-    tab_canceled_by_customer, tab_canceled_by_driver = st.tabs(
+    tab1, tab2 = st.tabs(
         tabs=["Canceled by Customer", "Canceled by Driver"], 
-        default="Canceled by Customer",
     )
 
-    tab_content_canceled_by_customer(tab_canceled_by_customer)
+    tab_content_canceled_by_customer(tab1)
 
-    tab_content_canceled_by_driver(tab_canceled_by_driver)
+    tab_content_canceled_by_driver(tab2)
 
