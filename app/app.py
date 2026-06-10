@@ -5,6 +5,7 @@ from cancellation import section_cancellation
 from revenue import section_revenue
 from vehicle_type import section_vehicle_type
 from overall import section_overall
+from embedded_tableau import section_embedded_tableau
 from typing import Callable
 import streamlit as st
 
@@ -20,7 +21,8 @@ sidebar_options = [
     SidebarOptionData("Vehicle Type", section_vehicle_type),
     SidebarOptionData("Revenue", section_revenue),
     SidebarOptionData("Cancellation",section_cancellation),
-    SidebarOptionData("Ratings",section_ratings)
+    SidebarOptionData("Ratings",section_ratings),
+    SidebarOptionData("Embedded Tableau", section_embedded_tableau)
 ]
 
 def place_sidebar():
@@ -42,6 +44,8 @@ def place_sidebar():
 
 
 def main():
+    st.set_page_config(layout="wide")
+
     place_sidebar()  
 
 
