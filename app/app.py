@@ -44,7 +44,7 @@ def place_sidebar():
 
 
 def main():
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide", page_title="OLA Ride Insites")
 
     place_sidebar()  
 

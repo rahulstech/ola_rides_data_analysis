@@ -1,9 +1,11 @@
 import sqlite3
 import atexit
+import os
 
-db_path = "../sql/ola_rides.sqlite3"
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_PATH, "..", "sql", "ola_rides.sqlite3")
 
-db_conn = sqlite3.connect(db_path, check_same_thread=False)
+db_conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 
 cur = db_conn.cursor()
 
